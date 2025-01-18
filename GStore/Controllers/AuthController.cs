@@ -24,6 +24,7 @@ namespace GStore.Controllers
             if (result == null)
                 return BadRequest("Username or password incorrect");
 
+            //Response.Cookies.Append("jwt", result.)
 
             return Ok(result);
         }

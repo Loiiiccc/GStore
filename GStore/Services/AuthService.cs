@@ -25,6 +25,10 @@ namespace GStore.Services
 
             user.Username = request.Username;
             user.PasswordHash = hashedPassword;
+            user.Role = "Client";
+            if(await context.Users.CountAsync() ==0)
+                user.ClientCode = 1000;
+            user.ClientCode = context.Users.Max(u => u.ClientCode) + 1;
 
             context.Users.Add(user);
             await context.SaveChangesAsync();
