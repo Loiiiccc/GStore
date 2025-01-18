@@ -4,6 +4,7 @@ using GStore.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GStore.Migrations
 {
     [DbContext(typeof(GStoreDbContext))]
-    partial class GStoreDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250117174316_CartAndCartIdemCreationWithRel")]
+    partial class CartAndCartIdemCreationWithRel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,18 +33,18 @@ namespace GStore.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<Guid>("ClientId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("CodeClient")
-                        .HasColumnType("int");
-
                     b.Property<float>("TotalCost")
                         .HasColumnType("real");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("UserId1")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("ClientId");
+                    b.HasIndex("UserId1");
 
                     b.ToTable("Carts");
                 });
@@ -173,13 +176,13 @@ namespace GStore.Migrations
 
             modelBuilder.Entity("GStore.Models.Cart", b =>
                 {
-                    b.HasOne("GStore.Models.User", "Client")
+                    b.HasOne("GStore.Models.User", "User")
                         .WithMany("Carts")
-                        .HasForeignKey("ClientId")
+                        .HasForeignKey("UserId1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Client");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("GStore.Models.CartItem", b =>

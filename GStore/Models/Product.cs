@@ -13,8 +13,11 @@ namespace GStore.Models
         [Precision(18, 4)]
         public decimal Price { get; set; }
         public bool Availiable { get; set; }
+        public string ImageUrl { get; set; }
 
         public int CategoryId { get; set; }
         public Category? Category { get; set; }
+
+        public List<CartItem> CartItems { get; set; }
     }
 }
