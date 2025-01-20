@@ -26,7 +26,7 @@ namespace GStore.Services
             user.Username = request.Username;
             user.PasswordHash = hashedPassword;
             user.Role = "Client";
-            if(await context.Users.CountAsync() ==0)
+            if (await context.Users.CountAsync() == 0)
                 user.ClientCode = 1000;
             user.ClientCode = context.Users.Max(u => u.ClientCode) + 1;
 
@@ -48,6 +48,7 @@ namespace GStore.Services
             {
                 return null;
             }
+
 
             return await CreateTokenresponse(user);
         }
@@ -125,5 +126,44 @@ namespace GStore.Services
             return user;
         }
 
+        public Task<string> GetUserRoleAsync(Guid userId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SetTokenCookieAsync(TokenResponseDTO tokenResponse, HttpContext httpContext)
+        {
+            httpContext.Response.Cookies.Append(
+                "AccessToken",
+                tokenResponse.AccessToken,
+                new CookieOptions
+                {
+                    Expires = DateTime.Now.AddDays(1),
+                    HttpOnly = true,
+                    Secure = true,
+                    IsEssential = true
+                });
+            httpContext.Response.Cookies.Append(
+                "RefreshToken",
+                tokenResponse.RefreshToken,
+                new CookieOptions
+                {
+                    Expires = DateTime.Now.AddDays(1),
+                    HttpOnly = true,
+                    Secure = true,
+                    IsEssential = true
+                });
+            return Task.CompletedTask;
+        }
+
+        public async Task<User?> GetUserDataByUsernameAsync(string username)
+        {
+            var user = await context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            if (user is null )
+            {
+                return null;
+            }
+            return user;
+        }
     }
 }

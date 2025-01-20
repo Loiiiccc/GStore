@@ -1,5 +1,6 @@
 ﻿using GStore.Data;
 using GStore.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ namespace GStore.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize] 
     public class CategoryController(GStoreDbContext context) : ControllerBase
     {
         private readonly GStoreDbContext _context = context;

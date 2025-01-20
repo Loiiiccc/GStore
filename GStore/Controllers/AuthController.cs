@@ -21,12 +21,15 @@ namespace GStore.Controllers
         public async Task<ActionResult<TokenResponseDTO>> Login(UserDTO request)
         {
             var result = await authService.LoginAsync(request);
-            if (result == null)
-                return BadRequest("Username or password incorrect");
+            if (result != null)
+            {
+                await authService.SetTokenCookieAsync(result, HttpContext);
 
-            //Response.Cookies.Append("jwt", result.)
+                return Ok(result);
 
-            return Ok(result);
+            }
+            return BadRequest("Username or password incorrect");
+
         }
 
         [HttpPost("register")]
@@ -35,21 +38,38 @@ namespace GStore.Controllers
             var user = await authService.RegisterAsync(request);
             if (user == null)
             {
-                return BadRequest("user already exists");
+                return BadRequest("User already exists");
             }
             return Ok(user);
         }
 
 
+        //[HttpPost("refresh-token")]
+        //public async Task<ActionResult<TokenResponseDTO>> RefreshToken(RefreshTokenRequestDTO request)
+        //{
+        //    var result = await authService.RefreshTokenAsync(request);
+        //    if (result is null || result.AccessToken is null || result.RefreshToken is null)
+        //        return Unauthorized("Unvalid refresh token");
+
+        //    return Ok(result);
+        //}
+
         [HttpPost("refresh-token")]
-        public async Task<ActionResult<TokenResponseDTO>> RefreshToken(RefreshTokenRequestDTO request)
+        public async Task<ActionResult<TokenResponseDTO>> RefreshToken(string username, RefreshTokenRequestDTO requestToken)
         {
+            HttpContext.Request.Cookies.TryGetValue("accessToken", out var accessToken);
+            HttpContext.Request.Cookies.TryGetValue("refreshToken", out var refreshToken);
+
+            var user = await authService.GetUserDataByUsernameAsync(username);
+            var request = new RefreshTokenRequestDTO {UserId = user.Id, RefreshToken = refreshToken };
             var result = await authService.RefreshTokenAsync(request);
-            if(result is null || result.AccessToken is null || result.RefreshToken is null)
+            if (result is null /*|| result.AccessToken is null */|| result.RefreshToken is null)
                 return Unauthorized("Unvalid refresh token");
 
+            await authService.SetTokenCookieAsync(result, HttpContext);
             return Ok(result);
         }
+
 
         [Authorize]
         [HttpGet]
