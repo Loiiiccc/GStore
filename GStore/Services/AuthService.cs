@@ -58,6 +58,7 @@ namespace GStore.Services
             return new TokenResponseDTO
             {
                 AccessToken = CreateToken(user),
+                Username = user.Username,
                 RefreshToken = await CreateRefreshTokenAsync(user)
             };
         }

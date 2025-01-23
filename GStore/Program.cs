@@ -12,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi("v1", options => { options.AddDocumentTransformer<BearerSecuritySchemeTransformer>(); });
 
 ///DbContexte and dependencies injection
 ///
@@ -42,12 +42,20 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapScalarApiReference(); ///Saclar implementation
+    app.MapScalarApiReference(option =>
+    {
+        option.Title = "GStore API Reference";
+        option.Theme = ScalarTheme.DeepSpace;
+        option.ShowSidebar = true;
+        option.DefaultHttpClient = new (ScalarTarget.CSharp, ScalarClient.HttpClient);
+
+    }); ///Saclar implementation
     app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 

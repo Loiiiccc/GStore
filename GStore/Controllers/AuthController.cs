@@ -18,14 +18,15 @@ namespace GStore.Controllers
         public static User user = new User();
 
         [HttpPost("login")]
-        public async Task<ActionResult<TokenResponseDTO>> Login(UserDTO request)
+        public async Task<ActionResult<User>> Login(UserDTO request)
         {
+            var response = new LoginResponse();
             var result = await authService.LoginAsync(request);
             if (result != null)
             {
-                await authService.SetTokenCookieAsync(result, HttpContext);
-
-                return Ok(result);
+                response.IsLogged = true;
+                response.Token = result.AccessToken;
+                return Ok(response);
 
             }
             return BadRequest("Username or password incorrect");
@@ -44,30 +45,41 @@ namespace GStore.Controllers
         }
 
 
+        [HttpPost("refresh-token")]
+        public async Task<ActionResult<TokenResponseDTO>> RefreshToken(RefreshTokenRequestDTO request)
+        {
+            var result = await authService.RefreshTokenAsync(request);
+            if (result is null || result.AccessToken is null || result.RefreshToken is null)
+                return Unauthorized("Unvalid refresh token");
+
+            return Ok(result);
+        }
+
         //[HttpPost("refresh-token")]
-        //public async Task<ActionResult<TokenResponseDTO>> RefreshToken(RefreshTokenRequestDTO request)
+        //public async Task<ActionResult<TokenResponseDTO>> RefreshToken(RefreshTokenRequestDTO requestToken)
         //{
-        //    var result = await authService.RefreshTokenAsync(request);
-        //    if (result is null || result.AccessToken is null || result.RefreshToken is null)
+
+        //    var result = await authService.RefreshTokenAsync(requestToken);
+        //    if (result is null /*|| result.AccessToken is null */|| result.RefreshToken is null)
         //        return Unauthorized("Unvalid refresh token");
 
+        //    await authService.SetTokenCookieAsync(result, HttpContext);
         //    return Ok(result);
         //}
 
-        [HttpPost("refresh-token")]
-        public async Task<ActionResult<TokenResponseDTO>> RefreshToken(string username, RefreshTokenRequestDTO requestToken)
+
+        //public async Task<IActionResult> Logout()
+        // {
+        //     await authService.LogoutAsync();
+        //     return NoContent();
+        // }
+
+
+        [HttpGet("user/{username}")]
+        public async Task<ActionResult<User>> GetUser(string username)
         {
-            HttpContext.Request.Cookies.TryGetValue("accessToken", out var accessToken);
-            HttpContext.Request.Cookies.TryGetValue("refreshToken", out var refreshToken);
-
             var user = await authService.GetUserDataByUsernameAsync(username);
-            var request = new RefreshTokenRequestDTO {UserId = user.Id, RefreshToken = refreshToken };
-            var result = await authService.RefreshTokenAsync(request);
-            if (result is null /*|| result.AccessToken is null */|| result.RefreshToken is null)
-                return Unauthorized("Unvalid refresh token");
-
-            await authService.SetTokenCookieAsync(result, HttpContext);
-            return Ok(result);
+            return Ok(user);
         }
 
 
